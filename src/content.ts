@@ -1,13 +1,37 @@
-import { decryptText, encryptText, isGhostPayload } from "./crypto";
+import { decryptText, encryptText, isGhostPayload, type GhostIdentity, type PairingPublicKey } from "./crypto";
 import { extensionApi } from "./extensionApi";
 
 const LOG_PREFIX = "[GhostDM]";
 const BUTTON_ID = "ghostdm-encrypt-button";
 const TOAST_ID = "ghostdm-status-toast";
 
-async function getPassphrase(): Promise<string | null> {
-  const result = await extensionApi.storage.local.get("ghostdm_passphrase");
-  return typeof result.ghostdm_passphrase === "string" ? result.ghostdm_passphrase : null;
+type PairingState = {
+  identity: GhostIdentity;
+  peerPublicKey: PairingPublicKey;
+};
+
+function isGhostIdentity(value: unknown): value is GhostIdentity {
+  const candidate = value as GhostIdentity;
+  return Boolean(candidate?.privateKey && candidate?.publicKey && candidate?.fingerprint);
+}
+
+function isPairingPublicKey(value: unknown): value is PairingPublicKey {
+  const candidate = value as PairingPublicKey;
+  return candidate?.kty === "EC" && candidate.crv === "P-256" && Boolean(candidate.x && candidate.y);
+}
+
+async function getPairingState(): Promise<PairingState | null> {
+  const identityResult = await extensionApi.storage.local.get("ghostdm_identity");
+  const peerResult = await extensionApi.storage.local.get("ghostdm_peer_public_key");
+
+  if (!isGhostIdentity(identityResult.ghostdm_identity) || !isPairingPublicKey(peerResult.ghostdm_peer_public_key)) {
+    return null;
+  }
+
+  return {
+    identity: identityResult.ghostdm_identity,
+    peerPublicKey: peerResult.ghostdm_peer_public_key
+  };
 }
 
 function findTextareas(): HTMLElement[] {
@@ -59,11 +83,11 @@ function showStatus(message: string): void {
 }
 
 async function encryptCurrentInput(): Promise<boolean> {
-  const passphrase = await getPassphrase();
+  const pairing = await getPairingState();
 
-  if (!passphrase) {
-    console.warn(LOG_PREFIX, "No passphrase set.");
-    showStatus("Set a GhostDM passphrase first.");
+  if (!pairing) {
+    console.warn(LOG_PREFIX, "No peer key set.");
+    showStatus("Open GhostDM and pair with this chat first.");
     return false;
   }
 
@@ -89,18 +113,18 @@ async function encryptCurrentInput(): Promise<boolean> {
     return false;
   }
 
-  const encrypted = await encryptText(plainText, passphrase);
+  const encrypted = await encryptText(plainText, pairing.identity, pairing.peerPublicKey);
   setElementText(input, encrypted);
   showStatus("Message encrypted.");
   return true;
 }
 
 async function decryptVisibleMessages(): Promise<void> {
-  const passphrase = await getPassphrase();
-  if (!passphrase) return;
+  const pairing = await getPairingState();
+  if (!pairing) return;
 
   const candidates = Array.from(document.querySelectorAll("span, div"))
-    .filter(el => el.textContent?.includes("ghostdm:v1:") || (el as HTMLElement).dataset.ghostdmOriginal) as HTMLElement[];
+    .filter(el => el.textContent?.includes("ghostdm:v") || (el as HTMLElement).dataset.ghostdmOriginal) as HTMLElement[];
 
   for (const el of candidates) {
     const raw = el.dataset.ghostdmOriginal || el.textContent?.trim();
@@ -108,14 +132,14 @@ async function decryptVisibleMessages(): Promise<void> {
     if (el.dataset.ghostdmDecrypted === "true") continue;
 
     try {
-      const decrypted = await decryptText(raw, passphrase);
+      const decrypted = await decryptText(raw, pairing.identity, pairing.peerPublicKey);
       el.dataset.ghostdmOriginal = raw;
       el.dataset.ghostdmDecrypted = "true";
       el.textContent = `🔒 ${decrypted}`;
     } catch {
       el.dataset.ghostdmOriginal = raw;
       el.dataset.ghostdmDecrypted = "false";
-      el.textContent = "🔒 GhostDM message. Wrong or missing passphrase.";
+      el.textContent = "🔒 GhostDM message. Pairing key does not match.";
     }
   }
 }
@@ -183,7 +207,7 @@ function boot(): void {
   });
 
   extensionApi.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName !== "local" || !changes.ghostdm_passphrase) return;
+    if (areaName !== "local" || (!changes.ghostdm_identity && !changes.ghostdm_peer_public_key)) return;
 
     document.querySelectorAll<HTMLElement>("[data-ghostdm-decrypted]").forEach(el => {
       el.dataset.ghostdmDecrypted = "false";

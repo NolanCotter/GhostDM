@@ -12,9 +12,9 @@ Client-side encryption overlay for Instagram Web DMs.
 
 GhostDM encrypts Instagram Web DM text in your browser before you send it and decrypts GhostDM payloads locally when you view them.
 
-Both people need GhostDM installed and must use the same shared passphrase. GhostDM does not run a server, does not collect personal data, and stores the passphrase only in local browser extension storage.
+Both people need GhostDM installed. Each browser generates a local key pair, then users exchange public pairing codes and save each other's code. GhostDM does not run a server, does not collect personal data, and stores keys only in local browser extension storage.
 
-This is an overlay for Instagram Web, not a replacement for Instagram's native security features. Mobile Instagram and users without GhostDM will see encrypted `ghostdm:v1:` payload text.
+This is an overlay for Instagram Web, not a replacement for Instagram's native security features. Mobile Instagram and users without GhostDM will see encrypted `ghostdm:v2:` payload text.
 
 ## Category
 
@@ -34,7 +34,7 @@ https://github.com/NolanCotter/GhostDM/blob/main/PRIVACY.md
 
 ## Permissions Justification
 
-`storage`: Saves the shared passphrase locally in browser extension storage.
+`storage`: Saves the local key pair and peer public key in browser extension storage.
 
 `https://www.instagram.com/*` and `https://instagram.com/*`: Lets the content script add the GhostDM encrypt button and decrypt visible GhostDM payloads on Instagram Web.
 

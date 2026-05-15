@@ -8,7 +8,8 @@ GhostDM does not restore Instagram's native end-to-end encryption. Instead, it e
 
 - Chrome Manifest V3 extension
 - Instagram Web content script
-- Local shared passphrase
+- Local ECDH key pair
+- Public pairing-code exchange
 - AES-GCM encryption through Web Crypto
 - Manual "Encrypt" button
 - Ctrl/Cmd + Shift + E shortcut while the DM composer is focused
@@ -28,13 +29,16 @@ Firefox: open `about:debugging#/runtime/this-firefox`, choose "Load Temporary Ad
 ## Use
 
 1. Open the GhostDM extension popup.
-2. Save the same shared passphrase on both browsers.
-3. On Instagram Web, type a DM and click "Encrypt" before sending.
-4. Send the encrypted `ghostdm:v1:` text through Instagram.
+2. Copy your public pairing code and send it to the other person.
+3. Paste their pairing code into GhostDM and save it.
+4. Compare the displayed fingerprints over a second channel if you need to verify identity.
+5. On Instagram Web, type a DM and click "Encrypt" before sending.
+6. Send the encrypted `ghostdm:v2:` text through Instagram.
 
 ## Limitations
 
 - Both users need GhostDM installed.
+- Pairing codes are public, but fingerprints should be compared to detect key swaps.
 - Mobile Instagram will show encrypted payloads.
 - Metadata is not hidden.
 - Attachments are not encrypted yet.

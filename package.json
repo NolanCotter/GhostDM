@@ -1,6 +1,6 @@
 {
   "name": "ghostdm",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Client-side encryption overlay for Instagram Web DMs.",
   "type": "module",
   "scripts": {

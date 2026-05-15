@@ -10,9 +10,9 @@ GhostDM does not collect, sell, share, transmit, or remotely store personal data
 
 ## Local Storage
 
-GhostDM stores the shared passphrase only in the browser extension's local storage so the extension can encrypt and decrypt messages on the same device.
+GhostDM stores your local private key and saved peer public key only in the browser extension's local storage so the extension can encrypt and decrypt messages on the same device.
 
-The passphrase is not sent to GhostDM servers. GhostDM does not operate a backend service.
+Your private key is not sent to GhostDM servers. GhostDM does not operate a backend service.
 
 ## Message Content
 
@@ -22,7 +22,7 @@ Encrypted message payloads are sent through Instagram only when the user sends t
 
 ## Security Notice
 
-GhostDM does not restore Instagram's native end-to-end encryption and has not been independently audited. Do not reuse account passwords as GhostDM passphrases.
+GhostDM does not restore Instagram's native end-to-end encryption and has not been independently audited. Pairing-code fingerprints should be compared out of band before trusting a conversation.
 
 ## Contact
 
