@@ -1,0 +1,31 @@
+{
+  "name": "ghostdm",
+  "version": "0.1.0",
+  "description": "Client-side encryption overlay for Instagram Web DMs.",
+  "type": "module",
+  "scripts": {
+    "build": "npm run build:chrome",
+    "build:chrome": "rm -rf dist && mkdir -p dist && cp public/manifest.json dist/manifest.json && cp public/popup.html dist/popup.html && cp -R public/icons dist/icons && esbuild src/content.ts src/background.ts src/popup.ts --bundle --outdir=dist --format=iife --target=chrome120",
+    "build:firefox": "rm -rf dist-firefox && mkdir -p dist-firefox && cp public/manifest.firefox.json dist-firefox/manifest.json && cp public/popup.html dist-firefox/popup.html && cp -R public/icons dist-firefox/icons && esbuild src/content.ts src/background.ts src/popup.ts --bundle --outdir=dist-firefox --format=iife --target=firefox120",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run build:chrome && npm run build:firefox",
+    "lint:firefox": "web-ext lint --source-dir dist-firefox",
+    "package": "rm -rf artifacts && mkdir -p artifacts && npm run build:chrome && web-ext build --source-dir dist --artifacts-dir artifacts --filename ghostdm-chrome.zip --overwrite-dest && npm run build:firefox && web-ext build --source-dir dist-firefox --artifacts-dir artifacts --filename ghostdm-firefox.zip --overwrite-dest",
+    "watch": "npm run build -- --watch"
+  },
+  "keywords": [
+    "chrome-extension",
+    "privacy",
+    "encryption",
+    "instagram",
+    "e2ee"
+  ],
+  "author": "Nolan Cotter",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chrome": "latest",
+    "esbuild": "latest",
+    "typescript": "latest",
+    "web-ext": "^10.1.0"
+  }
+}
