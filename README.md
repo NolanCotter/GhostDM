@@ -41,6 +41,10 @@ Firefox: open `about:debugging#/runtime/this-firefox`, choose "Load Temporary Ad
 - DOM selectors may break when Instagram changes its UI.
 - This is not audited security software.
 
+## Privacy
+
+GhostDM does not operate a backend service and does not collect or transmit personal data outside the local browser/add-on. See [PRIVACY.md](PRIVACY.md).
+
 ## Dev
 
 ```bash
